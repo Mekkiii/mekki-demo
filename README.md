@@ -1,6 +1,10 @@
 # mekki-demo
-git clone https://github.com/Mekkiii/mekki-demo.git
 
+> A Vue.js project
+
+## Build Setup
+
+``` bash
 # install dependencies
 npm install
 
@@ -12,3 +16,4 @@ npm run build
 
 # demo address
 https://mekki-demo.vercel.app/
+```
