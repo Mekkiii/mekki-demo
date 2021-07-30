@@ -46,7 +46,7 @@
 </template>
 <script>
 import { SettingTwoTone, GithubFilled } from "@ant-design/icons-vue";
-import { defineComponent } from "vue";
+import { defineComponent, reactive, toRefs, onMounted } from "vue";
 const plainOptions = [
   "Full Name",
   "Age",
@@ -103,8 +103,8 @@ export default defineComponent({
     SettingTwoTone,
     GithubFilled,
   },
-  data() {
-    return {
+  setup() {
+    const state = reactive({
       checkedList: defaultCheckedList,
       indeterminate: true,
       checkAll: false,
@@ -114,54 +114,59 @@ export default defineComponent({
       deletedata: [],
       data,
       columns,
+    });
+    const methods = reactive({
+      onSelectChange(selectedRowKeys) {
+        state.selectedRowKeys = selectedRowKeys;
+        console.log(state.selectedRowKeys);
+      },
+      onCheckChange(checkedList) {
+        state.indeterminate =
+          !!checkedList.length && checkedList.length < plainOptions.length;
+        state.checkAll = checkedList.length === plainOptions.length;
+        state.deletedata = [];
+        JSON.parse(JSON.stringify(state.columns)).forEach((item) => {
+          for (let i in checkedList) {
+            if (checkedList[i] == item.title) {
+              state.deletedata.push(item);
+            }
+          }
+        });
+      },
+      onCheckAllChange(e) {
+        Object.assign(state, {
+          checkedList: e.target.checked ? plainOptions : [],
+          indeterminate: false,
+          checkAll: e.target.checked,
+        });
+        state.deletedata = [];
+        JSON.parse(JSON.stringify(state.columns)).forEach((item) => {
+          for (let i in state.checkedList) {
+            if (state.checkedList[i] == item.title) {
+              state.deletedata.push(item);
+            }
+          }
+        });
+      },
+    });
+    const getInitialData = (checkedList) => {
+      state.deletedata = [];
+      JSON.parse(JSON.stringify(state.columns)).forEach((item) => {
+        for (let i in checkedList) {
+          if (checkedList[i] == item.title) {
+            state.deletedata.push(item);
+          }
+        }
+      });
     };
-  },
-  methods: {
-    getInitialData(checkedList) {
-      this.deletedata = [];
-      JSON.parse(JSON.stringify(this.columns)).forEach((item) => {
-        for (let i in checkedList) {
-          if (checkedList[i] == item.title) {
-            this.deletedata.push(item);
-          }
-        }
-      });
-    },
-    onSelectChange(selectedRowKeys) {
-      this.selectedRowKeys = selectedRowKeys;
-      console.log(this.selectedRowKeys);
-    },
-    onCheckChange(checkedList) {
-      this.indeterminate =
-        !!checkedList.length && checkedList.length < plainOptions.length;
-      this.checkAll = checkedList.length === plainOptions.length;
-      this.deletedata = [];
-      JSON.parse(JSON.stringify(this.columns)).forEach((item) => {
-        for (let i in checkedList) {
-          if (checkedList[i] == item.title) {
-            this.deletedata.push(item);
-          }
-        }
-      });
-    },
-    onCheckAllChange(e) {
-      Object.assign(this, {
-        checkedList: e.target.checked ? plainOptions : [],
-        indeterminate: false,
-        checkAll: e.target.checked,
-      });
-      this.deletedata = [];
-      JSON.parse(JSON.stringify(this.columns)).forEach((item) => {
-        for (let i in this.checkedList) {
-          if (this.checkedList[i] == item.title) {
-            this.deletedata.push(item);
-          }
-        }
-      });
-    },
-  },
-  mounted() {
-    this.getInitialData(this.checkedList);
+    onMounted(() => {
+      getInitialData(state.checkedList);
+    });
+    return {
+      ...toRefs(state),
+      ...toRefs(methods),
+      getInitialData,
+    };
   },
 });
 </script>
